@@ -17,7 +17,7 @@ if (isset($_GET['hub_verify_token'])) {
 /* receive and send messages */
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (isset($input['entry'][0]['messaging'][0]['sender']['id'])) {
+//if (isset($input['entry'][0]['messaging'][0]['sender']['id'])) {
 
     $sender = $input['entry'][0]['messaging'][0]['sender']['id']; //sender facebook id 
 
@@ -45,4 +45,4 @@ if (isset($input['entry'][0]['messaging'][0]['sender']['id'])) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
     $result = curl_exec($ch); // user will get the message
-}
+//}
