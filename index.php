@@ -31,7 +31,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 
     $resp = array(
       'recipient' => array(
-        'id' => $sender
+        'id' => '4466510196728031'
       ),
       'message' => array(
         'text' => $message
