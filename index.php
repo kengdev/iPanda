@@ -27,7 +27,7 @@ $input = json_decode(file_get_contents('php://input'), true);
     $ch = curl_init($url);
 
     /*prepare response*/
-    $message = 'What sup man';
+    $message = 'What sup man'.' '.$sender;
 
     $resp = array(
       'recipient' => array(
