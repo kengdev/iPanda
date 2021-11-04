@@ -1,48 +1,35 @@
 <?php
-
-$access_token = 'EABDpq01cuYMBANUycT4UYnYDVaqxLpZBlmjeR46MDdEGQb2laU8ZBXMX6aRgv7bj6NBRiyPoXP0nGzaKPotBZAw77VCCGkGim8QXhPHYnw6bDgQHZB5ZCa7SRUaGdTZAb8k36b1Aad5L3PWX2zvo5qtwBkehd6pJ4JY6NHcucvkQAN9BHJmegvf4hBmPntjJF8qi0HNUS1kwZDZD';
-
-/* validate verify token needed for setting up web hook */ 
-
-if (isset($_GET['hub_verify_token'])) { 
-    if ($_GET['hub_verify_token'] === $access_token) {
-        echo $_GET['hub_challenge'];
-        return;
-    } else {
-        echo 'Invalid Verify Token';
-        return;
+// Access Token
+$access_token = '97yDox9kW0U3sFC/MQOYdFqGe4BDUUaQAmD3DZC/KK+LALi5dZ1UxWTyQ92PrDQ/xNvHRE/jn4ffgiBtUJbVgN800pVCJI3cw6k7wApeolqZ0EBJ88JFWxKb3AQfb84EXoUuexEjhBpJNRYjvFTdCwdB04t89/1O/w1cDnyilFU=';
+// รับค่าที่ส่งมา
+$content = file_get_contents('php://input');
+// แปลงเป็น JSON
+$events = json_decode($content, true);
+if (!empty($events['events'])) {
+    foreach ($events['events'] as $event) {
+        if ($event['type'] == 'message' && $event['message']['type'] == 'text') {
+            // ข้อความที่ส่งกลับ มาจาก ข้อความที่ส่งมา
+            // ร่วมกับ USER ID ของไลน์ที่เราต้องการใช้ในการตอบกลับ
+            $messages = array(
+                'type' => 'text',
+                'text' => 'Reply message : '.$event['message']['text']."\nUser ID : ".$event['source']['userId'],
+            );
+            $post = json_encode(array(
+                'replyToken' => $event['replyToken'],
+                'messages' => array($messages),
+            ));
+            // URL ของบริการ Replies สำหรับการตอบกลับด้วยข้อความอัตโนมัติ
+            $url = 'https://api.line.me/v2/bot/message/reply';
+            $headers = array('Content-Type: application/json', 'Authorization: Bearer '.$access_token);
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            $result = curl_exec($ch);
+            curl_close($ch);
+            echo $result;
+        }
     }
 }
-
-/* receive and send messages */
-$input = json_decode(file_get_contents('php://input'), true);
-
-//if (isset($input['entry'][0]['messaging'][0]['sender']['id'])) {
-
-    $sender = $input['entry'][0]['messaging'][0]['sender']['id']; //sender facebook id 
-
-    $url = 'https://graph.facebook.com/v2.6/me/messages?access_token='. $access_token;
-
-    /*initialize curl*/
-    $ch = curl_init($url);
-
-    /*prepare response*/
-    $message = 'What sup man'.' '.$sender;
-
-    $resp = array(
-      'recipient' => array(
-        'id' => $sender
-      ),
-      'message' => array(
-        'text' => $message
-      )
-    );
-    $jsonData = json_encode($resp);
-
-    /* curl setting to send a json post data */
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
-    $result = curl_exec($ch); // user will get the message
-//}
